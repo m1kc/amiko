@@ -6,3 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[dev-dependencies]
+redis = "0.25.3"
+# mockall = "0.12.1"
+mockall_double = "0.3.1"

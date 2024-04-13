@@ -1,5 +1,10 @@
-use std::net::TcpStream;
 use std::io::Read;
+
+// #[cfg(not(test))]
+use std::net::TcpStream;
+// #[cfg(test)]
+// use stub::MockTcpStream as TcpStream;
+
 
 const DEBUG_READ_BYTE: bool = false;
 const DEBUG_READ_BULK_STRING: bool = true;
@@ -8,6 +13,41 @@ pub const CR: u8 = b'\r';
 pub const LF: u8 = b'\n';
 pub const TYPE_ARRAY: u8 = b'*';
 pub const TYPE_BULK_STRING: u8 = b'$';
+
+
+#[cfg(never)]
+pub mod stub {
+	pub struct MockTcpStream {
+		data: Vec<u8>,
+		cursor: usize,
+	}
+	impl MockTcpStream {
+		pub fn new(data: Vec<u8>) -> Self {
+			MockTcpStream {
+				data: data,
+				cursor: 0,
+			}
+		}
+
+		pub fn read_exact(&mut self, buf: &mut [u8]) -> Result<(), std::io::Error> {
+			if self.cursor + buf.len() > self.data.len() {
+				return Err(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "Unexpected EOF"));
+			}
+			buf.copy_from_slice(&self.data[self.cursor..self.cursor + buf.len()]);
+			self.cursor += buf.len();
+			Ok(())
+		}
+
+		pub fn shutdown(&self, _: std::net::Shutdown) -> Result<(), std::io::Error> {
+			Ok(())
+		}
+
+		pub fn write_all(&mut self, buf: &[u8]) -> Result<(), std::io::Error> {
+			self.data.extend_from_slice(buf);
+			Ok(())
+		}
+	}
+}
 
 
 pub fn read_byte(stream: &mut TcpStream) -> Result<u8, std::io::Error> {
@@ -24,6 +64,29 @@ pub fn read_byte(stream: &mut TcpStream) -> Result<u8, std::io::Error> {
 	}
 
 	Ok(buffer[0])
+}
+
+
+#[cfg(never)]
+mod test {
+	/*
+	use mockall_double::double;
+
+	use crate::read_byte;
+
+	#[double]
+	use super::stub::TcpStream;
+
+	#[test]
+	fn test_read_byte() {
+		let expected = [b'A', b'B', b'C'];
+		let mut stream = TcpStream::new(expected.to_vec());
+		assert_eq!(read_byte(&mut stream).unwrap(), b'A');
+		assert_eq!(read_byte(&mut stream).unwrap(), b'B');
+		assert_eq!(read_byte(&mut stream).unwrap(), b'C');
+		assert!(read_byte(&mut stream).is_err());
+	}
+	*/
 }
 
 
