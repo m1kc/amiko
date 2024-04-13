@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-// Implementation of key-value storage in Rust.
+// Redis-like key-value storage.
 // Keys and values are both sequences of bytes.
-// It's thread-safe!
+// Not thread-safe.
 pub struct Database {
 	data: HashMap<Vec<u8>, Vec<u8>>,
 }
