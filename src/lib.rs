@@ -8,6 +8,19 @@ use std::io::*;
 use std::sync::{Arc, RwLock};
 
 
+const VERBOSE: bool = false;
+
+
+// This macro accepts the same arguments as println!.
+macro_rules! log {
+	($($arg:tt)*) => {
+		if VERBOSE {
+			println!($($arg)*);
+		}
+	}
+}
+
+
 fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 	loop {
 		// Read the leading byte to determine the type of the next RESP message.
@@ -18,14 +31,14 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 		};
 		// If we get something ASCII, the person is using inline mode over telnet and we don't support that (yet).
 		if (leading_byte >= b'A' && leading_byte <= b'Z') || (leading_byte >= b'a' && leading_byte <= b'z') {
-			println!("Inline mode? No way");
+			log!("Inline mode? No way");
 			stream.write("-ERR inline mode not supported\r\n".as_bytes()).unwrap();
 			skip_line(&mut stream).unwrap();
 			continue;
 		}
 		// Commands always come as arrays, so reject other types.
 		if leading_byte != TYPE_ARRAY {
-			println!("Expected array type, got: {}", leading_byte);
+			log!("Expected array type, got: {}", leading_byte);
 			stream.write("-ERR expected array type\r\n".as_bytes()).unwrap();
 			stream.flush().unwrap();
 			stream.shutdown(Shutdown::Both).unwrap();
@@ -34,7 +47,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 
 		// Next, read array length.
 		let num_of_elements = read_number(&mut stream).unwrap();
-		println!("Got command - {} elements", num_of_elements);
+		log!("Got command - {} elements", num_of_elements);
 		// Zero length is weird but valid I guess.
 		if num_of_elements == 0 {
 			continue;
@@ -60,13 +73,13 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 			("SET", 2) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
 				let value = resp_expect_bulk_string(&mut stream).unwrap();
-				println!("SET key: {:?}, value: {:?}", key, value);
+				log!("SET key: {:?}, value: {:?}", key, value);
 				storage.write().unwrap().insert(key, value);
 				stream.write_fmt(format_args!("+OK\r\n")).unwrap();
 			}
 			("GET", 1) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
-				println!("GET key: {:?}", key);
+				log!("GET key: {:?}", key);
 				match storage.read().unwrap().get(&key) {
 					Some(value) => {
 						stream.write_fmt(format_args!("${}\r\n", value.len())).unwrap();
@@ -80,7 +93,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 			}
 			("DEL", 1) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
-				println!("DEL key: {:?}", key);
+				log!("DEL key: {:?}", key);
 				match storage.write().unwrap().remove(&key) {
 					Some(_) => {
 						stream.write_all(b":1\r\n").unwrap();
@@ -92,7 +105,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 			}
 			("KEYS", 1) => {
 				let prefix = resp_expect_bulk_string(&mut stream).unwrap();
-				println!("KEYS with pattern: {:?}", prefix);
+				log!("KEYS with pattern: {:?}", prefix);
 				let keys = storage.read().unwrap().search_keys(&prefix);
 				stream.write_fmt(format_args!("*{}\r\n", keys.len())).unwrap();
 				for key in keys {
@@ -102,7 +115,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 				}
 			}
 			_ => {
-				println!("Unknown command: {:?}", _cmd);
+				log!("Unknown command: {:?}", _cmd);
 				stream.write("-ERR unknown command\r\n".as_bytes()).unwrap();
 				stream.flush().unwrap();
 				for _ in 0..argc {
@@ -119,7 +132,7 @@ pub fn serve() {
 	const LISTEN_PORT: u16 = 6379;
 	let l: String = format!("{}:{}", LISTEN_ADDR, LISTEN_PORT);
 	let listener = TcpListener::bind(&l).expect("Failed to bind to address");
-	println!("Server listening on {}", &l);
+	log!("Server listening on {}", &l);
 
 	let mut _storage = Database::new();
 	let storage = Arc::new(RwLock::new(_storage));
@@ -127,14 +140,14 @@ pub fn serve() {
 	for stream in listener.incoming() {
 		match stream {
 			Ok(stream) => {
-				println!("New client connected");
+				log!("New client connected");
 				let storage = storage.clone();
 				std::thread::spawn(move || {
 					handle_client(stream, storage);
 				});
 			}
 			Err(err) => {
-				println!("Failed to accept client connection: {}", err);
+				log!("Failed to accept client connection: {}", err);
 			}
 		}
 	}
