@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-// Redis-like key-value storage.
-// Keys and values are both sequences of bytes.
-// Not thread-safe.
+/// Redis-like key-value storage.
+/// Keys and values are both sequences of bytes.
+/// Not thread-safe.
 pub struct Database {
 	data: HashMap<Vec<u8>, Vec<u8>>,
 }

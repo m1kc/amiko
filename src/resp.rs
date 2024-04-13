@@ -4,10 +4,10 @@ use std::io::Read;
 const DEBUG_READ_BYTE: bool = false;
 const DEBUG_READ_BULK_STRING: bool = true;
 
-const CR: u8 = b'\r';
-const LF: u8 = b'\n';
-const TYPE_ARRAY: u8 = b'*';
-const TYPE_BULK_STRING: u8 = b'$';
+pub const CR: u8 = b'\r';
+pub const LF: u8 = b'\n';
+pub const TYPE_ARRAY: u8 = b'*';
+pub const TYPE_BULK_STRING: u8 = b'$';
 
 
 pub fn read_byte(stream: &mut TcpStream) -> Result<u8, std::io::Error> {
@@ -33,6 +33,47 @@ pub fn read_byte_and_expect(stream: &mut TcpStream, expected: u8) -> Result<(), 
 		return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("Expected byte {}, got {}", expected, b)));
 	}
 	Ok(())
+}
+
+
+pub fn skip_line(stream: &mut TcpStream) -> Result<(), std::io::Error> {
+	loop {
+		let b = read_byte(stream)?;
+		if b == CR {
+			break;
+		}
+	}
+	read_byte_and_expect(stream, LF)?;
+	Ok(())
+}
+
+
+pub fn read_number(stream: &mut TcpStream) -> Result<i64, std::io::Error> {
+	let mut ret: i64 = 0;
+	let mut sign = 1;
+	loop {
+		let b = read_byte(stream)?;
+		if b == b'-' {
+			sign = -1;
+			continue;
+		}
+		if b == CR {
+			break;
+		}
+		assert!(b >= b'0' && b <= b'9', "Invalid character encountered: {}", b as char);
+		ret = ret * 10 + (b - b'0') as i64;
+	}
+	read_byte_and_expect(stream, LF)?;
+	return Ok(ret * sign);
+}
+
+
+pub fn read_number_unsigned(stream: &mut TcpStream) -> Result<u64, std::io::Error> {
+	let buf = read_number(stream)?;
+	if buf < 0 {
+		return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Expected unsigned number, got negative"));
+	}
+	return Ok(buf as u64);
 }
 
 

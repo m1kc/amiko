@@ -3,18 +3,51 @@ use resp::*;
 mod kv;
 use kv::Database;
 
-use std::net::{TcpListener, TcpStream};
+use std::net::{Shutdown, TcpListener, TcpStream};
 use std::io::*;
 use std::sync::{Arc, RwLock};
 
 
 fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
-	// TODO: inline mode isn't implemented yet.
-
 	loop {
-		let num_of_elements = resp_read_array_header(&mut stream).unwrap();
+		// Read the leading byte to determine the type of the next RESP message.
+		// If read failed, just stop the thread.
+		let leading_byte = match read_byte(&mut stream) {
+			Ok(b) => b,
+			Err(_) => return,
+		};
+		// If we get something ASCII, the person is using inline mode over telnet and we don't support that (yet).
+		if (leading_byte >= b'A' && leading_byte <= b'Z') || (leading_byte >= b'a' && leading_byte <= b'z') {
+			println!("Inline mode? No way");
+			stream.write("-ERR inline mode not supported\r\n".as_bytes()).unwrap();
+			skip_line(&mut stream).unwrap();
+			continue;
+		}
+		// Commands always come as arrays, so reject other types.
+		if leading_byte != TYPE_ARRAY {
+			println!("Expected array type, got: {}", leading_byte);
+			stream.write("-ERR expected array type\r\n".as_bytes()).unwrap();
+			stream.flush().unwrap();
+			stream.shutdown(Shutdown::Both).unwrap();
+			return;
+		}
+
+		// Next, read array length.
+		let num_of_elements = read_number(&mut stream).unwrap();
 		println!("Got command - {} elements", num_of_elements);
-		assert!(num_of_elements > 0);
+		// Zero length is weird but valid I guess.
+		if num_of_elements == 0 {
+			continue;
+		}
+		// Sub-zero length is not valid, close the connection.
+		if num_of_elements < 0 {
+			stream.write("-ERR negative array length\r\n".as_bytes()).unwrap();
+			stream.flush().unwrap();
+			stream.shutdown(Shutdown::Both).unwrap();
+			return;
+		}
+
+		// Now, read the actual command.
 		let cmd = resp_expect_bulk_string(&mut stream).unwrap();
 		let cmd_as_string: &str = std::str::from_utf8(&cmd).unwrap();
 		match (cmd_as_string, num_of_elements) {
