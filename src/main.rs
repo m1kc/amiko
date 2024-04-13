@@ -13,7 +13,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 
 	loop {
 		let num_of_elements = resp_read_array_header(&mut stream).unwrap();
-		println!("Okay, {} elements", num_of_elements);
+		println!("Got command - {} elements", num_of_elements);
 		assert!(num_of_elements > 0);
 		let cmd = resp_expect_bulk_string(&mut stream).unwrap();
 		let cmd_as_string: &str = std::str::from_utf8(&cmd).unwrap();

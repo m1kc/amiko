@@ -1,6 +1,8 @@
 use std::net::TcpStream;
 use std::io::Read;
 
+const DEBUG_READ_BYTE: bool = false;
+const DEBUG_READ_BULK_STRING: bool = true;
 
 const CR: u8 = b'\r';
 const LF: u8 = b'\n';
@@ -12,7 +14,6 @@ pub fn read_byte(stream: &mut TcpStream) -> Result<u8, std::io::Error> {
 	let mut buffer = [0; 1]; // 1 byte buffer
 	stream.read_exact(&mut buffer)?;
 
-	const DEBUG_READ_BYTE: bool = false;
 	if DEBUG_READ_BYTE {
 		let ch: String = match buffer[0] {
 			CR => "CR".to_string(),
@@ -68,9 +69,17 @@ pub fn resp_expect_bulk_string(stream: &mut TcpStream) -> Result<Vec<u8>, std::i
 	read_byte_and_expect(stream, CR)?;
 	read_byte_and_expect(stream, LF)?;
 
-	println!("Read bulk string: {:?}", buf);
-	let buf_as_string = String::from_utf8_lossy(&buf);
-	println!("  as UTF-8: {}", buf_as_string);
+	if DEBUG_READ_BULK_STRING {
+		println!("Read bulk string, length {}", len);
+		match std::str::from_utf8(&buf) {
+			Ok(s) => {
+				println!("  valid UTF-8: {}", s)
+			},
+			Err(_) => {
+				println!("  not UTF-8: {:?}", buf)
+			}
+		}
+	}
 
 	return Ok(buf);
 }
