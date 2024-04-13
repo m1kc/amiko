@@ -25,8 +25,11 @@ impl Database {
         self.data.remove(key)
     }
 
-	pub fn search_keys(&self, prefix: &[u8]) -> Vec<&Vec<u8>> {
-		self.data.keys().filter(|key| key.starts_with(prefix)).collect()
+	pub fn search_keys(&self, pattern: &[u8]) -> Vec<&Vec<u8>> {
+		match pattern {
+			[b'*'] => self.data.keys().collect(),
+			_ => self.data.keys().filter(|key| key.starts_with(pattern)).collect(),
+		}
 	}
 }
 
@@ -69,5 +72,15 @@ mod tests {
 		assert_eq!(result.len(), 2);
 		assert!(result.contains(&&"Alleria".as_bytes().to_vec()));
 		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		let result = storage.search_keys("*".as_bytes());
+		assert_eq!(result.len(), 3);
+		assert!(result.contains(&&"Alleria".as_bytes().to_vec()));
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&&"Boris".as_bytes().to_vec()));
+
+		let result = storage.search_keys("B".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Boris".as_bytes().to_vec()));
 	}
 }
