@@ -1,37 +1,33 @@
-use std::{collections::HashMap, sync::RwLock};
+use std::collections::HashMap;
 
 // Implementation of key-value storage in Rust.
 // Keys and values are both sequences of bytes.
 // It's thread-safe!
 pub struct Database {
-    data: RwLock<HashMap<Vec<u8>, Vec<u8>>>,
+	data: HashMap<Vec<u8>, Vec<u8>>,
 }
 
 impl Database {
-    pub fn new() -> Self {
-        Database {
-			data: RwLock::new(HashMap::new()),
-        }
-    }
+	pub fn new() -> Self {
+		Database {
+			data: HashMap::new(),
+		}
+	}
 
-    pub fn insert(&mut self, key: Vec<u8>, value: Vec<u8>) {
-		let mut db = self.data.write().unwrap();
-		db.insert(key, value);
-    }
+	pub fn insert(&mut self, key: Vec<u8>, value: Vec<u8>) {
+		self.data.insert(key, value);
+	}
 
-    pub fn get(&self, key: &[u8]) -> Option<Vec<u8>> {
-		let db = self.data.read().unwrap();
-        db.get(key).cloned()
-    }
+	pub fn get(&self, key: &[u8]) -> Option<Vec<u8>> {
+		self.data.get(key).cloned()
+	}
 
-    pub fn remove(&mut self, key: &[u8]) -> Option<Vec<u8>> {
-		let mut db = self.data.write().unwrap();
-		db.remove(key)
-    }
+	pub fn remove(&mut self, key: &[u8]) -> Option<Vec<u8>> {
+		self.data.remove(key)
+	}
 
 	pub fn search_keys(&self, pattern: &[u8]) -> Vec<Vec<u8>> {
-		let db = self.data.read().unwrap();
-		let keys = db.keys().cloned();
+		let keys = self.data.keys().cloned();
 		match pattern {
 			[b'*'] => keys.collect(),
 			_ => keys.filter(|key| key.starts_with(pattern)).collect(),
