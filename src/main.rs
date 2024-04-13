@@ -7,7 +7,7 @@ use std::io::{Read, Write};
 
 fn read_byte(stream: &mut TcpStream) -> Result<u8, std::io::Error> {
 	let mut buffer = [0; 1]; // 1 byte buffer
-	stream.read(&mut buffer)?;
+	stream.read_exact(&mut buffer)?;
 
 	const DEBUG_READ_BYTE: bool = false;
 	if DEBUG_READ_BYTE {
