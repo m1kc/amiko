@@ -46,23 +46,25 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 			stream.shutdown(Shutdown::Both).unwrap();
 			return;
 		}
+		let argc = num_of_elements - 1;
 
 		// Now, read the actual command.
-		let cmd = resp_expect_bulk_string(&mut stream).unwrap();
-		let cmd_as_string: &str = std::str::from_utf8(&cmd).unwrap();
-		match (cmd_as_string, num_of_elements) {
-			("COMMAND", 2) => {
+		let _cmd = resp_expect_bulk_string(&mut stream).unwrap();
+		let cmd: &str = std::str::from_utf8(&_cmd).unwrap();
+		match (cmd, argc) {
+			("COMMAND", 1) => {
+				// COMMAND DOCS stub
 				let _arg = resp_expect_bulk_string(&mut stream).unwrap();
 				stream.write_fmt(format_args!("*0\r\n")).unwrap();
 			},
-			("SET", 3) => {
+			("SET", 2) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
 				let value = resp_expect_bulk_string(&mut stream).unwrap();
 				println!("SET key: {:?}, value: {:?}", key, value);
 				storage.write().unwrap().insert(key, value);
 				stream.write_fmt(format_args!("+OK\r\n")).unwrap();
 			}
-			("GET", 2) => {
+			("GET", 1) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
 				println!("GET key: {:?}", key);
 				match storage.read().unwrap().get(&key) {
@@ -88,9 +90,9 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 					}
 				}
 			}
-			("KEYS", 2) => {
+			("KEYS", 1) => {
 				let prefix = resp_expect_bulk_string(&mut stream).unwrap();
-				println!("KEYS prefix: {:?}", prefix);
+				println!("KEYS with pattern: {:?}", prefix);
 				let keys = storage.read().unwrap().search_keys(&prefix);
 				stream.write_fmt(format_args!("*{}\r\n", keys.len())).unwrap();
 				for key in keys {
@@ -100,7 +102,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 				}
 			}
 			_ => {
-				println!("Unknown command: {:?}", cmd);
+				println!("Unknown command: {:?}", _cmd);
 			}
 		}
 	}
