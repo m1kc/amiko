@@ -25,7 +25,12 @@ fn main() {
 			let key = format!("key{}", i);
 			let value = format!("value{}", i);
 			let result: RedisResult<()> = conn.set(&key, &value);
-			assert!(result.is_ok());
+			match result {
+				Ok(_) => {},
+				Err(e) => {
+					panic!("Error: {:?}", e);
+				}
+			}
 		}
 	}
 
