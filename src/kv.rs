@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 // Implementation of key-value storage in Rust.
 // Keys and values are both sequences of bytes.
-pub struct KeyValueStorage {
+pub struct Database {
     data: HashMap<Vec<u8>, Vec<u8>>,
 }
 
-impl KeyValueStorage {
+impl Database {
     pub fn new() -> Self {
-        KeyValueStorage {
+        Database {
             data: HashMap::new(),
         }
     }
@@ -24,4 +24,50 @@ impl KeyValueStorage {
     pub fn remove(&mut self, key: &[u8]) -> Option<Vec<u8>> {
         self.data.remove(key)
     }
+
+	pub fn search_keys(&self, prefix: &[u8]) -> Vec<&Vec<u8>> {
+		self.data.keys().filter(|key| key.starts_with(prefix)).collect()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_insert_and_get() {
+		let mut storage = Database::new();
+		let key = vec![1, 2, 3];
+		let value = vec![4, 5, 6];
+
+		storage.insert(key.clone(), value.clone());
+
+		assert_eq!(storage.get(&key), Some(&value));
+	}
+
+	#[test]
+	fn test_insert_and_remove() {
+		let mut storage = Database::new();
+		let key = vec![1, 2, 3];
+		let value = vec![4, 5, 6];
+
+		storage.insert(key.clone(), value.clone());
+
+		assert_eq!(storage.remove(&key), Some(value));
+		assert_eq!(storage.get(&key), None);
+	}
+
+	#[test]
+	fn test_search_keys() {
+		let mut storage = Database::new();
+
+		storage.insert("Alleria".as_bytes().to_vec(), vec![]);
+		storage.insert("Alan".as_bytes().to_vec(), vec![]);
+		storage.insert("Boris".as_bytes().to_vec(), vec![]);
+
+		let result = storage.search_keys("Al".as_bytes());
+		assert_eq!(result.len(), 2);
+		assert!(result.contains(&&"Alleria".as_bytes().to_vec()));
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+	}
 }

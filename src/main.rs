@@ -1,11 +1,11 @@
 mod kv;
-use kv::KeyValueStorage;
+use kv::Database;
 
 
 fn main() {
 	println!("Hello, world!");
 
-	let mut storage = KeyValueStorage::new();
+	let mut storage = Database::new();
 	let key: Vec<u8> = "Carl".as_bytes().to_vec();
 	let val: Vec<u8> = "good".as_bytes().to_vec();
 	storage.insert(key, val);
