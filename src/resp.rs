@@ -131,6 +131,7 @@ pub fn read_number(stream: &mut TcpStream) -> Result<i64, std::io::Error> {
 }
 
 
+#[allow(dead_code)]
 pub fn read_number_unsigned(stream: &mut TcpStream) -> Result<u64, std::io::Error> {
 	let buf = read_number(stream)?;
 	if buf < 0 {
@@ -140,6 +141,7 @@ pub fn read_number_unsigned(stream: &mut TcpStream) -> Result<u64, std::io::Erro
 }
 
 
+#[allow(dead_code)]
 pub fn resp_read_array_header(stream: &mut TcpStream) -> Result<u64, std::io::Error> {
 	read_byte_and_expect(stream, TYPE_ARRAY)?;
 	let mut ret: u64 = 0;
