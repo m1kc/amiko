@@ -70,7 +70,7 @@ pub fn resp_expect_bulk_string(stream: &mut TcpStream) -> Result<Vec<u8>, std::i
 
 	println!("Read bulk string: {:?}", buf);
 	let buf_as_string = String::from_utf8_lossy(&buf);
-	println!("Bulk string as UTF-8 string: {}", buf_as_string);
+	println!("  as UTF-8: {}", buf_as_string);
 
 	return Ok(buf);
 }
