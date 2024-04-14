@@ -68,11 +68,6 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 		let _cmd = resp_expect_bulk_string(&mut stream).unwrap();
 		let cmd: &str = std::str::from_utf8(&_cmd).unwrap();
 		match (cmd, argc) {
-			("COMMAND", 1) => {
-				// COMMAND DOCS stub
-				let _arg = resp_expect_bulk_string(&mut stream).unwrap();
-				stream.write_fmt(format_args!("*0\r\n")).unwrap();
-			},
 			("SET", 2) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
 				let value = resp_expect_bulk_string(&mut stream).unwrap();
@@ -117,6 +112,15 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 					stream.write_all(b"\r\n").unwrap();
 				}
 			}
+			("FLUSHDB", 0) | ("FLUSHDB", 1) => {
+				log!("FLUSHDB");
+				// ignore the argument (always flush synchronously)
+				if argc == 1 {
+					resp_expect_bulk_string(&mut stream).unwrap();
+				}
+				storage.write().unwrap().clear();
+				stream.write_all(b"+OK\r\n").unwrap();
+			},
 			_ => {
 				log!("Bad command or wrong number of args: {:?}", _cmd);
 				stream.write("-ERR bad command or wrong number of args\r\n".as_bytes()).unwrap();

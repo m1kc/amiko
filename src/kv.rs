@@ -27,6 +27,10 @@ impl Database {
 		self.data.remove(key)
 	}
 
+	pub fn clear(&mut self) {
+		self.data.clear();
+	}
+
 	/// Supported glob-style patterns:
 	///
     /// * `h?llo` matches `hello`, `hallo` and `hxllo`
