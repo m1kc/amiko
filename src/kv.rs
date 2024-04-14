@@ -8,6 +8,12 @@ pub struct Database {
 	data: HashMap<Vec<u8>, Vec<u8>>,
 }
 
+impl Default for Database {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl Database {
 	pub fn new() -> Self {
 		Database {
@@ -99,10 +105,11 @@ impl Database {
 					match byte {
 						// Globs (not filtered: [ ] - ^)
 						b'*' => regex_pattern.push_str(".*?"),
-						b'?' => regex_pattern.push_str("."),
+						b'?' => regex_pattern.push('.'),
 						// Unsafe symbols (very naive filter, but that'll do for now)
 						b'(' | b')' | b'{' | b'}' | b'+' | b'.' | b'\\' | b'$' | b'|' => {
-							regex_pattern.push_str(format!("\\{}", byte as char).as_str())
+							regex_pattern.push('\\');
+							regex_pattern.push(byte as char);
 						},
 						// Everything else
 						_ => regex_pattern.push(byte as char),
@@ -111,7 +118,7 @@ impl Database {
 				regex_pattern.push('$');
 				// println!("regex_pattern: {:?}", regex_pattern);
 				let re = regex::Regex::new(&regex_pattern).unwrap();
-				keys.filter(|key| re.is_match(&String::from_utf8_lossy(&key))).collect()
+				keys.filter(|key| re.is_match(&String::from_utf8_lossy(key))).collect()
 			},
 		}
 	}

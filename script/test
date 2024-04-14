@@ -2,5 +2,6 @@
 set -e
 set -x
 
+cargo clippy
 cargo test
 cargo bench --bench speed

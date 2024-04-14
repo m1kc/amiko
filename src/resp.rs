@@ -131,7 +131,7 @@ pub fn read_number(stream: &mut TcpStream) -> Result<i64, std::io::Error> {
 		ret = ret * 10 + (b - b'0') as i64;
 	}
 	read_byte_and_expect(stream, LF)?;
-	return Ok(ret * sign);
+	Ok(ret * sign)
 }
 
 
@@ -141,7 +141,7 @@ pub fn read_number_unsigned(stream: &mut TcpStream) -> Result<u64, std::io::Erro
 	if buf < 0 {
 		return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Expected unsigned number, got negative"));
 	}
-	return Ok(buf as u64);
+	Ok(buf as u64)
 }
 
 
@@ -158,7 +158,7 @@ pub fn resp_read_array_header(stream: &mut TcpStream) -> Result<u64, std::io::Er
 		ret = ret * 10 + (b - b'0') as u64;
 	}
 	read_byte_and_expect(stream, LF)?;
-	return Ok(ret);
+	Ok(ret)
 }
 
 
@@ -191,14 +191,14 @@ pub fn resp_expect_bulk_string(stream: &mut TcpStream) -> Result<Vec<u8>, std::i
 		}
 	}
 
-	return Ok(buf);
+	Ok(buf)
 }
 
 
 pub fn resp_write_bulk_string(stream: &mut TcpStream, s: &[u8]) -> Result<(), std::io::Error> {
-	stream.write(&[TYPE_BULK_STRING])?;
-	stream.write(format!("{}\r\n", s.len()).as_bytes())?;
-	stream.write(s)?;
-	stream.write(&[CR, LF])?;
+	stream.write_all(&[TYPE_BULK_STRING])?;
+	stream.write_all(format!("{}\r\n", s.len()).as_bytes())?;
+	stream.write_all(s)?;
+	stream.write_all(&[CR, LF])?;
 	Ok(())
 }

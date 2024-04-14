@@ -35,14 +35,14 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 		// If we get something ASCII, the person is using inline mode over telnet and we don't support that (yet).
 		if (leading_byte >= b'A' && leading_byte <= b'Z') || (leading_byte >= b'a' && leading_byte <= b'z') {
 			log!("Inline mode? No way");
-			stream.write("-ERR inline mode not supported\r\n".as_bytes()).unwrap();
+			stream.write_all("-ERR inline mode not supported\r\n".as_bytes()).unwrap();
 			skip_line(&mut stream).unwrap();
 			continue;
 		}
 		// Commands always come as arrays, so reject other types.
 		if leading_byte != TYPE_ARRAY {
 			log!("Expected array type, got: {}", leading_byte);
-			stream.write("-ERR expected array type\r\n".as_bytes()).unwrap();
+			stream.write_all("-ERR expected array type\r\n".as_bytes()).unwrap();
 			stream.flush().unwrap();
 			stream.shutdown(Shutdown::Both).unwrap();
 			return;
@@ -57,7 +57,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 		}
 		// Sub-zero length is not valid, close the connection.
 		if num_of_elements < 0 {
-			stream.write("-ERR negative array length\r\n".as_bytes()).unwrap();
+			stream.write_all("-ERR negative array length\r\n".as_bytes()).unwrap();
 			stream.flush().unwrap();
 			stream.shutdown(Shutdown::Both).unwrap();
 			return;
@@ -144,7 +144,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 			},
 			_ => {
 				log!("Bad command or wrong number of args: {:?}", _cmd);
-				stream.write("-ERR bad command or wrong number of args\r\n".as_bytes()).unwrap();
+				stream.write_all("-ERR bad command or wrong number of args\r\n".as_bytes()).unwrap();
 				stream.flush().unwrap();
 				for _ in 0..argc {
 					resp_expect_bulk_string(&mut stream).unwrap();
