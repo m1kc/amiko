@@ -1,6 +1,6 @@
 mod resp;
 use resp::*;
-mod kv;
+pub mod kv;
 use kv::Database;
 
 use std::net::{Shutdown, TcpListener, TcpStream};

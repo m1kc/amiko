@@ -15,18 +15,69 @@ impl Database {
 		}
 	}
 
+	/// Sets the value of a key.
+	/// If the key already exists, the previous value is overwritten.
+	///
+	/// ```
+	/// # use amiko::kv::Database;
+	/// let mut db = Database::new();
+	///
+	/// db.insert(vec![1, 2, 3], vec![4, 5, 6]);
+	/// assert_eq!(db.get(&[1, 2, 3]), Some(vec![4, 5, 6]));
+	///
+	/// db.insert(vec![1, 2, 3], vec![9, 9, 9]);
+	/// assert_eq!(db.get(&[1, 2, 3]), Some(vec![9, 9, 9]));
+	/// ```
 	pub fn insert(&mut self, key: Vec<u8>, value: Vec<u8>) {
 		self.data.insert(key, value);
 	}
 
+	/// Gets the value of a key.
+	/// Returns `Some(value)` if the key exists, `None` otherwise.
+	///
+	/// ```
+	/// # use amiko::kv::Database;
+	/// let mut db = Database::new();
+	///
+	/// assert_eq!(db.get(&[1, 2, 3]), None);
+	///
+	/// db.insert(vec![1, 2, 3], vec![4, 5, 6]);
+	/// assert_eq!(db.get(&[1, 2, 3]), Some(vec![4, 5, 6]));
+	/// ```
 	pub fn get(&self, key: &[u8]) -> Option<Vec<u8>> {
 		self.data.get(key).cloned()
 	}
 
+	/// Removes a key from the database.
+	/// Returns the value of the key if it existed, `None` otherwise.
+	///
+	/// ```
+	/// # use amiko::kv::Database;
+	/// let mut db = Database::new();
+	///
+	/// let last_value = db.remove(&[1, 2, 3]);
+	/// assert_eq!(last_value, None);
+	///
+	/// db.insert(vec![1, 2, 3], vec![4, 5, 6]);
+	/// let last_value = db.remove(&[1, 2, 3]);
+	/// assert_eq!(last_value, Some(vec![4, 5, 6]));
+	/// assert_eq!(db.get(&[1, 2, 3]), None);
+	/// ```
 	pub fn remove(&mut self, key: &[u8]) -> Option<Vec<u8>> {
 		self.data.remove(key)
 	}
 
+	/// Removes all keys from the database.
+	///
+	/// ```
+	/// # use amiko::kv::Database;
+	/// let mut db = Database::new();
+	///
+	/// db.insert(vec![1, 2, 3], vec![4, 5, 6]);
+	/// db.insert(vec![2, 3, 4], vec![5, 6, 7]);
+	/// db.clear();
+	/// assert_eq!(db.get(&[1, 2, 3]), None);
+	/// ```
 	pub fn clear(&mut self) {
 		self.data.clear();
 	}
