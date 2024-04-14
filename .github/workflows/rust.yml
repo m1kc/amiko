@@ -19,6 +19,7 @@ jobs:
     - uses: actions/cache@v4.0.2
       with:
         path: ~/.cargo
+        key: shared
     - name: Build
       run: cargo build --release && ls -lh target/*
     - name: Build tests
