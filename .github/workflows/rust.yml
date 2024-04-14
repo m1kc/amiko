@@ -21,6 +21,6 @@ jobs:
     - name: Build
       run: cargo build --release && ls -lh target/*
     - name: Build tests
-      run: cargo build --tests --benches
+      run: cargo build --tests
     - name: Run tests
-      run: cargo test --all-targets
+      run: script/test
