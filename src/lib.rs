@@ -68,6 +68,27 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 		let _cmd = resp_expect_bulk_string(&mut stream).unwrap();
 		let cmd: &str = std::str::from_utf8(&_cmd).unwrap();
 		match (cmd, argc) {
+			("PING", 0) | ("PING", 1) => {
+				log!("PING");
+				if argc == 0 {
+					stream.write_all(b"+PONG\r\n").unwrap();
+				} else {
+					let msg = resp_expect_bulk_string(&mut stream).unwrap();
+					resp_write_bulk_string(&mut stream, &msg).unwrap();
+				}
+			},
+			("ECHO", 1) => {
+				log!("ECHO");
+				let msg = resp_expect_bulk_string(&mut stream).unwrap();
+				resp_write_bulk_string(&mut stream, &msg).unwrap();
+			},
+			("QUIT", 0) => {
+				log!("QUIT");
+				stream.write_all(b"+OK\r\n").unwrap();
+				stream.flush().unwrap();
+				stream.shutdown(Shutdown::Both).unwrap();
+				return;
+			},
 			("SET", 2) => {
 				let key = resp_expect_bulk_string(&mut stream).unwrap();
 				let value = resp_expect_bulk_string(&mut stream).unwrap();

@@ -1,4 +1,4 @@
-use std::io::Read;
+use std::io::{Read, Write};
 
 // #[cfg(not(test))]
 use std::net::TcpStream;
@@ -192,4 +192,13 @@ pub fn resp_expect_bulk_string(stream: &mut TcpStream) -> Result<Vec<u8>, std::i
 	}
 
 	return Ok(buf);
+}
+
+
+pub fn resp_write_bulk_string(stream: &mut TcpStream, s: &[u8]) -> Result<(), std::io::Error> {
+	stream.write(&[TYPE_BULK_STRING])?;
+	stream.write(format!("{}\r\n", s.len()).as_bytes())?;
+	stream.write(s)?;
+	stream.write(&[CR, LF])?;
+	Ok(())
 }
