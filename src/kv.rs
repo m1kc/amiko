@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use ahash::AHashMap;
 use regex;
 
 /// Redis-like key-value storage.
 /// Keys and values are both sequences of bytes.
 /// Not thread-safe.
 pub struct Database {
-	data: HashMap<Vec<u8>, Vec<u8>>,
+	data: AHashMap<Vec<u8>, Vec<u8>>,
 }
 
 impl Default for Database {
@@ -17,7 +17,7 @@ impl Default for Database {
 impl Database {
 	pub fn new() -> Self {
 		Database {
-			data: HashMap::new(),
+			data: AHashMap::new(),
 		}
 	}
 
