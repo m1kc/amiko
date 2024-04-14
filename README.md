@@ -4,6 +4,8 @@ An in-memory database, compatible with Redis protocol and clients. Written in Ru
 
 🔧 Stability: **early alpha**
 
+⚠️ Hobby project, not for serious use. You have been warned.
+
 _"Amiko" means "friend" in Esperanto. Stress falls on "i", like in Spanish "amigo"._
 
 ## Table of Contents
@@ -35,7 +37,7 @@ The following commands are supported:
 * `DEL <key>`
 * `KEYS <pattern>` (all Redis patterns should work)
 * `FLUSHDB [SYNC|ASYNC]` (always synchronous, optional argument is parsed but ignored)
-* `PING [msg]`, `ECHO [msg]`, `QUIT`
+* `PING [msg]`, `ECHO <msg>`, `QUIT`
 
 RESP3 is not supported at this time.
 
