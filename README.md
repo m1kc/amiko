@@ -34,6 +34,8 @@ The following commands are supported:
 * `GET <key>`
 * `DEL <key>`
 * `KEYS <pattern>` (all Redis patterns should work)
+* `FLUSHDB [SYNC|ASYNC]` (always synchronous, optional argument is parsed but ignored)
+* `PING [msg]`, `ECHO [msg]`, `QUIT`
 
 RESP3 is not supported at this time.
 
