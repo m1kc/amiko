@@ -15,7 +15,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.2
+    - uses: actions/cache@v4.0.2
+      with:
+        path: ~/.cargo
     - name: Build
       run: cargo build --release && ls -lh target/*
     - name: Build tests
