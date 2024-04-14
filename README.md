@@ -51,7 +51,7 @@ Test 1: 20000 writes of different keys
 Elapsed: 721.67ms
 # amiko
 Test 1: 20000 writes of different keys
-Elapsed: 662.60ms
+Elapsed: 554.77ms
 ```
 
 While there are no benchmarks, here are some general thoughts:
