@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use regex;
 
 /// Redis-like key-value storage.
 /// Keys and values are both sequences of bytes.
@@ -26,11 +27,37 @@ impl Database {
 		self.data.remove(key)
 	}
 
+	/// Supported glob-style patterns:
+	///
+    /// * `h?llo` matches `hello`, `hallo` and `hxllo`
+    /// * `h*llo` matches `hllo` and `heeeello`
+    /// * `h[ae]llo` matches `hello` and `hallo`, but not `hillo`
+    /// * `h[^e]llo` matches `hallo`, `hbllo`, ... but not `hello`
+    /// * `h[a-b]llo` matches `hallo` and `hbllo`
 	pub fn search_keys(&self, pattern: &[u8]) -> Vec<Vec<u8>> {
 		let keys = self.data.keys().cloned();
 		match pattern {
 			[b'*'] => keys.collect(),
-			_ => keys.filter(|key| key.starts_with(pattern)).collect(),
+			_ => {
+				let mut regex_pattern = String::from("^");
+				for &byte in pattern {
+					match byte {
+						// Globs (not filtered: [ ] - ^)
+						b'*' => regex_pattern.push_str(".*?"),
+						b'?' => regex_pattern.push_str("."),
+						// Unsafe symbols (very naive filter, but that'll do for now)
+						b'(' | b')' | b'{' | b'}' | b'+' | b'.' | b'\\' | b'$' | b'|' => {
+							regex_pattern.push_str(format!("\\{}", byte as char).as_str())
+						},
+						// Everything else
+						_ => regex_pattern.push(byte as char),
+					}
+				}
+				regex_pattern.push('$');
+				// println!("regex_pattern: {:?}", regex_pattern);
+				let re = regex::Regex::new(&regex_pattern).unwrap();
+				keys.filter(|key| re.is_match(&String::from_utf8_lossy(&key))).collect()
+			},
 		}
 	}
 }
@@ -70,7 +97,7 @@ mod tests {
 		storage.insert("Alan".as_bytes().to_vec(), vec![]);
 		storage.insert("Boris".as_bytes().to_vec(), vec![]);
 
-		let result = storage.search_keys("Al".as_bytes());
+		let result = storage.search_keys("Al*".as_bytes());
 		assert_eq!(result.len(), 2);
 		assert!(result.contains(&&"Alleria".as_bytes().to_vec()));
 		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
@@ -81,8 +108,42 @@ mod tests {
 		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
 		assert!(result.contains(&&"Boris".as_bytes().to_vec()));
 
-		let result = storage.search_keys("B".as_bytes());
+		let result = storage.search_keys("B*".as_bytes());
 		assert_eq!(result.len(), 1);
 		assert!(result.contains(&&"Boris".as_bytes().to_vec()));
+
+		let result = storage.search_keys("b*".as_bytes());
+		assert_eq!(result.len(), 0);
+
+		let result = storage.search_keys("A???".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		let result = storage.search_keys("Ala[kn]".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		let result = storage.search_keys("Ala[^z]".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		let result = storage.search_keys("Ala[k-p]".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		let result = storage.search_keys("*la*".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		let result = storage.search_keys("*lan".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+
+		// Overall validity
+		storage.insert("K{v".as_bytes().to_vec(), vec![]);
+
+		let result = storage.search_keys("K{v".as_bytes());
+		assert_eq!(result.len(), 1);
+		assert!(result.contains(&&"K{v".as_bytes().to_vec()));
 	}
 }
