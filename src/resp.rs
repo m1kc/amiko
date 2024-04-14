@@ -7,6 +7,10 @@ use std::net::TcpStream;
 
 
 const DEBUG_READ_BYTE: bool = false;
+
+#[cfg(debug_assertions)]
+const DEBUG_READ_BULK_STRING: bool = true;
+#[cfg(not(debug_assertions))]
 const DEBUG_READ_BULK_STRING: bool = false;
 
 pub const CR: u8 = b'\r';

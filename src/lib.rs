@@ -8,6 +8,9 @@ use std::io::*;
 use std::sync::{Arc, RwLock};
 
 
+#[cfg(debug_assertions)]
+const VERBOSE: bool = true;
+#[cfg(not(debug_assertions))]
 const VERBOSE: bool = false;
 
 
@@ -115,8 +118,8 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 				}
 			}
 			_ => {
-				log!("Unknown command: {:?}", _cmd);
-				stream.write("-ERR unknown command\r\n".as_bytes()).unwrap();
+				log!("Bad command or wrong number of args: {:?}", _cmd);
+				stream.write("-ERR bad command or wrong number of args\r\n".as_bytes()).unwrap();
 				stream.flush().unwrap();
 				for _ in 0..argc {
 					resp_expect_bulk_string(&mut stream).unwrap();
@@ -132,7 +135,7 @@ pub fn serve() {
 	const LISTEN_PORT: u16 = 6379;
 	let l: String = format!("{}:{}", LISTEN_ADDR, LISTEN_PORT);
 	let listener = TcpListener::bind(&l).expect("Failed to bind to address");
-	log!("Server listening on {}", &l);
+	println!("Server listening on {}", &l);
 
 	let mut _storage = Database::new();
 	let storage = Arc::new(RwLock::new(_storage));
@@ -140,7 +143,7 @@ pub fn serve() {
 	for stream in listener.incoming() {
 		match stream {
 			Ok(stream) => {
-				log!("New client connected");
+				log!("Client connected: {}", stream.peer_addr().unwrap());
 				let storage = storage.clone();
 				std::thread::spawn(move || {
 					handle_client(stream, storage);
