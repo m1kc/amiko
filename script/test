@@ -4,4 +4,5 @@ set -x
 
 cargo clippy
 cargo test
-cargo bench --bench speed
+cargo bench --bench e2ebench
+#cargo bench --bench kvbench
