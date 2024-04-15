@@ -5,13 +5,10 @@ use std::net::TcpStream;
 // #[cfg(test)]
 // use stub::MockTcpStream as TcpStream;
 
+use log::*;
+
 
 const DEBUG_READ_BYTE: bool = false;
-
-#[cfg(debug_assertions)]
-const DEBUG_READ_BULK_STRING: bool = true;
-#[cfg(not(debug_assertions))]
-const DEBUG_READ_BULK_STRING: bool = false;
 
 pub const CR: u8 = b'\r';
 pub const LF: u8 = b'\n';
@@ -179,14 +176,14 @@ pub fn resp_expect_bulk_string(stream: &mut TcpStream) -> Result<Vec<u8>, std::i
 	read_byte_and_expect(stream, CR)?;
 	read_byte_and_expect(stream, LF)?;
 
-	if DEBUG_READ_BULK_STRING {
-		println!("Read bulk string, length {}", len);
+	if log_enabled!(Level::Trace) {
+		trace!("Read bulk string, length {}", len);
 		match std::str::from_utf8(&buf) {
 			Ok(s) => {
-				println!("  valid UTF-8: {}", s)
+				trace!("- valid UTF-8: {}", s)
 			},
 			Err(_) => {
-				println!("  not UTF-8: {:?}", buf)
+				trace!("- not UTF-8: {:?}", buf)
 			}
 		}
 	}

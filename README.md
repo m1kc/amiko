@@ -26,6 +26,8 @@ cargo build --release
 
 Just run the `amiko` binary from the `target/` directory. Currently, it always binds to `127.0.0.1:6379`.
 
+Default log level is `info`. Other available levels: `off`, `error`, `warn`, `info`, `debug`, `trace`. To change: `AMIKO_LOG=<level>`.
+
 ## Compatibility
 
 Amiko is intended to be a drop-in replacement — your existing Redis clients, apps and libraries should work with Amiko without modifications.
