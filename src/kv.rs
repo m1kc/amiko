@@ -91,11 +91,11 @@ impl Database {
 
 	/// Supported glob-style patterns:
 	///
-    /// * `h?llo` matches `hello`, `hallo` and `hxllo`
-    /// * `h*llo` matches `hllo` and `heeeello`
-    /// * `h[ae]llo` matches `hello` and `hallo`, but not `hillo`
-    /// * `h[^e]llo` matches `hallo`, `hbllo`, ... but not `hello`
-    /// * `h[a-b]llo` matches `hallo` and `hbllo`
+	/// * `h?llo` matches `hello`, `hallo` and `hxllo`
+	/// * `h*llo` matches `hllo` and `heeeello`
+	/// * `h[ae]llo` matches `hello` and `hallo`, but not `hillo`
+	/// * `h[^e]llo` matches `hallo`, `hbllo`, ... but not `hello`
+	/// * `h[a-b]llo` matches `hallo` and `hbllo`
 	pub fn search_keys(&self, pattern: &[u8]) -> Vec<Vec<u8>> {
 		let keys = self.data.keys().cloned();
 		match pattern {
