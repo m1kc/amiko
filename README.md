@@ -68,4 +68,4 @@ While there are no benchmarks, here are some general thoughts:
 
 ## License
 
-GNU GPL v3
+GNU LGPL v3
