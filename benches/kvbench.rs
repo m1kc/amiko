@@ -3,7 +3,6 @@ use amiko::kv::Database;
 #[macro_use]
 extern crate criterion;
 use criterion::Criterion;
-use smallvec::SmallVec;
 
 
 fn bench_method1(c: &mut Criterion) {
