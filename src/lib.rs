@@ -33,7 +33,7 @@ fn handle_client(mut stream: TcpStream, storage: Arc<RwLock<Database>>) {
 			Err(_) => return,
 		};
 		// If we get something ASCII, the person is using inline mode over telnet and we don't support that (yet).
-		if (leading_byte >= b'A' && leading_byte <= b'Z') || (leading_byte >= b'a' && leading_byte <= b'z') {
+		if leading_byte.is_ascii_alphabetic() {
 			log!("Inline mode? No way");
 			stream.write_all("-ERR inline mode not supported\r\n".as_bytes()).unwrap();
 			skip_line(&mut stream).unwrap();

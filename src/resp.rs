@@ -127,7 +127,7 @@ pub fn read_number(stream: &mut TcpStream) -> Result<i64, std::io::Error> {
 		if b == CR {
 			break;
 		}
-		assert!(b >= b'0' && b <= b'9', "Invalid character encountered: {}", b as char);
+		assert!(b.is_ascii_digit(), "Invalid character encountered: {}", b as char);
 		ret = ret * 10 + (b - b'0') as i64;
 	}
 	read_byte_and_expect(stream, LF)?;
@@ -154,7 +154,7 @@ pub fn resp_read_array_header(stream: &mut TcpStream) -> Result<u64, std::io::Er
 		if b == CR {
 			break;
 		}
-		assert!(b >= b'0' && b <= b'9', "Invalid character encountered: {}", b as char);
+		assert!(b.is_ascii_digit(), "Invalid character encountered: {}", b as char);
 		ret = ret * 10 + (b - b'0') as u64;
 	}
 	read_byte_and_expect(stream, LF)?;
@@ -170,7 +170,7 @@ pub fn resp_expect_bulk_string(stream: &mut TcpStream) -> Result<Vec<u8>, std::i
 		if b == CR {
 			break;
 		}
-		assert!(b >= b'0' && b <= b'9', "Invalid character encountered: {}", b as char);
+		assert!(b.is_ascii_digit(), "Invalid character encountered: {}", b as char);
 		len = len * 10 + (b - b'0') as u64;
 	}
 	read_byte_and_expect(stream, LF)?;

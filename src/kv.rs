@@ -161,51 +161,51 @@ mod tests {
 
 		let result = storage.search_keys("Al*".as_bytes());
 		assert_eq!(result.len(), 2);
-		assert!(result.contains(&&"Alleria".as_bytes().to_vec()));
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alleria".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		let result = storage.search_keys("*".as_bytes());
 		assert_eq!(result.len(), 3);
-		assert!(result.contains(&&"Alleria".as_bytes().to_vec()));
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
-		assert!(result.contains(&&"Boris".as_bytes().to_vec()));
+		assert!(result.contains(&"Alleria".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Boris".as_bytes().to_vec()));
 
 		let result = storage.search_keys("B*".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Boris".as_bytes().to_vec()));
+		assert!(result.contains(&"Boris".as_bytes().to_vec()));
 
 		let result = storage.search_keys("b*".as_bytes());
 		assert_eq!(result.len(), 0);
 
 		let result = storage.search_keys("A???".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		let result = storage.search_keys("Ala[kn]".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		let result = storage.search_keys("Ala[^z]".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		let result = storage.search_keys("Ala[k-p]".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		let result = storage.search_keys("*la*".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		let result = storage.search_keys("*lan".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"Alan".as_bytes().to_vec()));
+		assert!(result.contains(&"Alan".as_bytes().to_vec()));
 
 		// Overall validity
 		storage.insert("K{v".as_bytes().to_vec(), vec![]);
 
 		let result = storage.search_keys("K{v".as_bytes());
 		assert_eq!(result.len(), 1);
-		assert!(result.contains(&&"K{v".as_bytes().to_vec()));
+		assert!(result.contains(&"K{v".as_bytes().to_vec()));
 	}
 }
