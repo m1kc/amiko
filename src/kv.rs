@@ -1,5 +1,6 @@
 use ahash::AHashMap;
 use regex;
+use compact_str::CompactString;
 
 /// Redis-like key-value storage.
 /// Keys and values are both sequences of bytes.
@@ -100,7 +101,7 @@ impl Database {
 		match pattern {
 			[b'*'] => keys.collect(),
 			_ => {
-				let mut regex_pattern = String::from("^");
+				let mut regex_pattern = CompactString::from("^");
 				for &byte in pattern {
 					match byte {
 						// Globs (not filtered: [ ] - ^)
@@ -118,7 +119,7 @@ impl Database {
 				regex_pattern.push('$');
 				// println!("regex_pattern: {:?}", regex_pattern);
 				let re = regex::Regex::new(&regex_pattern).unwrap();
-				keys.filter(|key| re.is_match(&String::from_utf8_lossy(key))).collect()
+				keys.filter(|key| re.is_match(&CompactString::from_utf8_lossy(key))).collect()
 			},
 		}
 	}

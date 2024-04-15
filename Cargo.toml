@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 ahash = "0.8.11"
+compact_str = "0.7.1"
 regex = "1.10.4"
 # smallvec = "1.13.2"
 
